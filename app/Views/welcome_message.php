@@ -247,9 +247,8 @@
     <section>
 
         <p>
-            <button id="open">Open</button>
-            <button id="close" style="display: none;">Close</button> 
-            <button id="refresh" style="display: none;">Refresh</button>
+            <button id="close">Close</button>
+            <button id="refresh">Refresh</button>
         </p>
 
         <pre>
@@ -283,7 +282,40 @@
     <!-- SCRIPTS -->
 
     <script>
+        const closeBtn = document.querySelector('#close');
+        const refreshBtn = document.querySelector('#refresh');
+        const eventList = document.querySelector('#list');
+        
+        const source = new EventSource('/stream');
 
+        source.onerror = function(e) {
+            console.log('EventSource failed.');
+        };
+
+        source.onmessage = function(e) {
+            const newElement = document.createElement('li');
+            const eventList = document.getElementById('list');
+
+            newElement.innerHTML = `message: ${e.data}`;
+            eventList.appendChild(newElement);
+        }
+
+        source.addEventListener('ping', function(event) {
+            const newElement = document.createElement('li');
+            const time = JSON.parse(event.data).time;
+            newElement.textContent = 'ping at ' + time;
+            eventList.appendChild(newElement);
+        });
+
+        closeBtn.addEventListener('click', function() {
+            source.close();
+            closeBtn.disabled = true;
+            console.log('EventStream connection closed');
+        });
+
+        refreshBtn.addEventListener('click', function() {
+            location.reload();
+        });
     </script>
 
     <!-- -->
